@@ -45,6 +45,25 @@ func (h *handlerShared) helloWorld(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func writeError(log *logrus.Logger, w http.ResponseWriter, err error, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	response := &api.Error{
+		Code:        status,
+		Description: message,
+	}
+
+	if err != nil {
+		response.Message = err.Error()
+	}
+
+	log.WithFields(logrus.Fields{
+		"code":        response.Code,
+		"message":     response.Message,
+		"description": response.Description,
+	}).Error("An error occured.")
+
+	w.WriteHeader(status)
 }
 
 // NewRouter instantiates a router and adds routes and respective handlers
