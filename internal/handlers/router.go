@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
+	"github.com/buzzbird/trading-service/pkg/api"
 	"github.com/go-chi/chi"
 
-	"github.com/buzzbird/go-service-helpers/pkg/output"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,9 +15,36 @@ type handlerShared struct {
 }
 
 func (h *handlerShared) helloWorld(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	// Our logger is used to give us some confidence if the correct handlers is
+	// used with our endpoint
+	h.log.Log(logrus.InfoLevel, "Request received on '/'")
 
-	output.WriteResponse(ctx, h.log, w, http.StatusOK, "Hello World!")
+	// As a first step we are setting our 'Content-Type' header, since this
+	// will be a REST API we won't need anything but the 'application/json' type
+	w.Header().Set("Content-Type", "application/json")
+
+	// Since JSON is not native to Go, we have to go the extra step of 'Marshalling'
+	// our data - or decoding it into JSON
+	// Below you can also see a simple approach to error handling, which is necessary
+	// if we encounter an error, we will log this event and then exit our function
+	// if this were used in an actual project, it should return a response to the user instead
+	jsonData, err := json.MarshalIndent("Hello World", "", "    ")
+	if err != nil {
+		h.log.Log(logrus.ErrorLevel, "failed to MarshalIndent response data")
+		return
+	}
+
+	// Set the HTTP status of our response
+	w.WriteHeader(200)
+
+	// And finally, send (write) the HTTP response to our user!
+	_, err = w.Write(jsonData)
+	if err != nil {
+		h.log.Log(logrus.ErrorLevel, "failed to write response")
+		return
+	}
+
+}
 }
 
 // NewRouter instantiates a router and adds routes and respective handlers
