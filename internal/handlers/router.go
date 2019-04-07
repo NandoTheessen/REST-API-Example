@@ -19,6 +19,7 @@ func (h *handlerShared) helloWorld(w http.ResponseWriter, r *http.Request) {
 	output.WriteResponse(ctx, h.log, w, http.StatusOK, "Hello World!")
 }
 
+// NewRouter instantiates a router and adds routes and respective handlers
 func NewRouter(log *logrus.Logger) *chi.Mux {
 	h := &handlerShared{
 		log: log,
